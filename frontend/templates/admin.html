@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Voice Bill Generator</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-cog"></i> Admin Panel</h1>
+            <p>Manage products, templates, and system settings</p>
+            <nav>
+                <a href="/" class="nav-link">Generate Bill</a>
+                <a href="/admin" class="nav-link active">Admin Panel</a>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <!-- System Statistics -->
+            <div class="card">
+                <h2><i class="fas fa-chart-bar"></i> System Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalProducts">0</div>
+                        <div class="stat-label">Total Products</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalTemplates">0</div>
+                        <div class="stat-label">Bill Templates</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="recentBills">0</div>
+                        <div class="stat-label">Recent Bills (30 days)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Management -->
+            <div class="card">
+                <h2><i class="fas fa-box"></i> Product Management</h2>
+                <div class="section-header">
+                    <button id="addProductBtn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add New Product
+                    </button>
+                    <button id="updateGlobalGstBtn" class="btn btn-secondary">
+                        <i class="fas fa-cog"></i> Update Global GST
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Product Name</th>
+                                <th>Price (₹)</th>
+                                <th>GST (%)</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody">
+                            <!-- Products will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Template Management -->
+            <div class="card">
+                <h2><i class="fas fa-file-alt"></i> Bill Template Management</h2>
+                <div class="section-header">
+                    <button id="uploadTemplateBtn" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> Upload New Template
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Template Name</th>
+                                <th>File Type</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="templatesTableBody">
+                            <!-- Templates will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <!-- Add/Edit Product Modal -->
+        <div id="productModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="productModalTitle">Add New Product</h3>
+                    <button class="close-btn" id="closeProductModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="productForm">
+                        <input type="hidden" id="productId" name="productId">
+                        <div class="form-group">
+                            <label for="productName">Product Name:</label>
+                            <input type="text" id="productName" name="productName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productPrice">Price (₹):</label>
+                            <input type="number" id="productPrice" name="productPrice" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productGst">GST Percentage (%):</label>
+                            <input type="number" id="productGst" name="productGst" step="0.01" min="0" max="100" value="18.0" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save Product</button>
+                            <button type="button" class="btn btn-secondary" id="cancelProduct">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global GST Modal -->
+        <div id="gstModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Update Global GST</h3>
+                    <button class="close-btn" id="closeGstModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="gstForm">
+                        <div class="form-group">
+                            <label for="globalGst">New GST Percentage (%):</label>
+                            <input type="number" id="globalGst" name="globalGst" step="0.01" min="0" max="100" value="18.0" required>
+                        </div>
+                        <div class="warning-message">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>This will update GST for ALL products in the system!</span>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-warning">Update All Products</button>
+                            <button type="button" class="btn btn-secondary" id="cancelGst">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Template Upload Modal -->
+        <div id="templateModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Upload Bill Template</h3>
+                    <button class="close-btn" id="closeTemplateModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="templateForm">
+                        <div class="form-group">
+                            <label for="templateName">Template Name:</label>
+                            <input type="text" id="templateName" name="templateName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="templateFile">Template File (PDF/JPG/PNG):</label>
+                            <input type="file" id="templateFile" name="templateFile" accept=".pdf,.jpg,.jpeg,.png" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Upload Template</button>
+                            <button type="button" class="btn btn-secondary" id="cancelTemplate">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirmModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Confirm Action</h3>
+                    <button class="close-btn" id="closeConfirmModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p id="confirmMessage">Are you sure you want to perform this action?</p>
+                    <div class="form-actions">
+                        <button id="confirmAction" class="btn btn-danger">Confirm</button>
+                        <button id="cancelConfirm" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/admin.js"></script>
+</body>
+</html>
